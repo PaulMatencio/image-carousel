@@ -1,0 +1,123 @@
+  <script>
+  const ImageCarouselMixin = superclass => class extends superclass {
+
+  static get properties() {
+    return {
+      /**
+      * Currently selected
+      */
+      selected: {
+        type: Object,
+        notify: true,
+        observer: '_selectedChanged'
+      },
+
+      /**
+       * Boolean value to decide if images should change automatically.
+      */
+      autoScroll: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true
+      //  observer  will be added dynamically
+      },
+
+      /**
+       * Transition ( animation) between images
+       * default off  for scrolling forward
+       */
+      transition: {
+        type: Boolean,
+        value: false,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Time after which image should change.
+       * This will only work if autoscroll is set to true
+       */
+      timer: {
+        type: Number,
+        value: 2000,
+        notify: true,
+        reflectToAttribute: true
+        //  Observer will be added dynamically
+      },
+
+      /**
+       * used to save the current interval
+       */
+      currentInterval: {
+        type: Object,
+        reflectToAttribute: true
+      },
+
+      /**
+       * Max Time which image should change
+       * This will only work if autoscroll is set to true
+       */
+      maxtimer: {
+        type: Number,
+        value: 10000,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      index: {
+        type: Number,
+        value: 0,
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      title: {
+        type: String,
+        value: '',
+        notify: true,
+        reflectToAttribute: true
+      },
+
+      /**
+       *  step of interval increase
+       * This will only work if autoscroll is set to true
+       */
+      _step: {
+        type: Number,
+        readOnly: true,
+        value: 250
+      }
+    };
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    /**  Use _resetSelected() method inside connectedCallback().
+     * Also call this method on slotchange so that we can update the
+     * carousel if child elements are added or removed.
+    */
+    this.shadowRoot.addEventListener('slotchange', this._resetSelected.bind(this));
+    this._resetSelected();
+  }
+
+  _selectedChanged(selected, oldSelected) {
+    if (oldSelected) oldSelected.removeAttribute('selected');
+    if (selected) selected.setAttribute('selected', '');
+  }
+
+  /** define the _resetSelected() method that will set the
+    *selected attribute on the first element child
+  */
+  _resetSelected() {
+  /** if there is already a selected child element, don't modify it unless
+    * it is no longer a child of the carousel
+  */
+    if (!this.selected || this.selected.parentElement !== this) {
+      this.selected = this.firstElementChild;
+    }
+  }
+
+
+}; // end of superclass extension
+ </script>

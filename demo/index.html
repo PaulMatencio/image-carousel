@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1, initial-scale=1, user-scalable=yes">
+
+    <title>image-carousel demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
+    <link rel="import" href="../image-carousel-styles.html">
+    <link rel="import" href="../image-carousel-custom-styles.html">
+    <custom-style>
+      <style is="custom-style" include="image-carousel-custom-styles"></style>
+    </custom-style>
+
+    <style>
+      :host {
+         display: block;
+         line-height: 1.2;
+         --icon-toggle-color: lightgrey;
+         --icon-toggle-outline-color: black;
+         --icon-toggle-pressed-color: red;
+         --iron-icon-width: 48px;
+         --iron-icon-height: 48px;
+       }
+
+       span.start, span.stop {
+         margin: 5px 10px;
+       }
+
+       .toolbar {
+         @apply --layout-horizontal;
+         @apply --layout-end-justified;
+         background-color: gray;
+         color: white;
+       }
+
+       .toggle-icon {
+         margin: 20px 50px 0 0;
+       }
+
+       .toggle-icon:hover .stop::after{
+         position: absolute;
+         top: -10px;
+         content: 'Stop scrolling';
+         color: black;
+         background-color: white;
+         border-radius: 10px;
+         padding: 3px 8px;
+         font-size: 16px;
+       }
+
+      .toggle-icon:hover .start::after {
+        position: absolute;
+        top: -10px;
+        content: 'Start scrolling';
+        color: black;
+        background-color: white;
+        border-radius: 10px;
+        padding: 3px 8px;
+        font-size: 16px;
+      }
+
+    </style>
+    <!--style include="images-carousel-styles"> </style-->
+    <link rel="stylesheet" href="../image-carousel-styles.css">
+    <link rel="import" href="../../polymer/lib/elements/dom-bind.html">
+    <link rel="import" href="../../polymer/lib/elements/dom-if.html">
+    <link rel="import" href="../../polymer/lib/elements/dom-repeat.html">
+    <link rel="import" href="../../iron-demo-helpers/demo-snippet.html">
+    <link rel="import" href="../../app-layout/app-toolbar/app-toolbar.html">
+    <link rel="import" href="../../paper-slider/paper-slider.html">
+    <link rel="import" href="../../icon-toggle/icon-toggle.html">
+    <link rel="import" href="../image-carousel.html">
+  </head>
+  <body>
+    <div>
+      <demo-snippet>
+      <template>
+        <dom-bind>
+          <template>
+            <!--  attributes
+
+                 no-bullets   to suppress bullets
+                 autoscroll,   timer and max are controlled with a paper-slider element
+                 control-scrolling  to control scroling inside the carousel. You can also control
+                 the autoscrolling outside the image-carousel as show in this demo
+            -->
+            <!-- dom-repeat does not work currently well  when adding images to the carousel ??
+                Check the demo script for adding mages or uncomment the img tag below  -->
+            <image-carousel auto-scroll$="[[autoScroll]]" timer="{{timer}}" maxtimer="{{maxtimer}}">
+                <!--img data-src="https://app-layout-assets.appspot.com/assets/bg1.jpg">
+                <img data-src="https://app-layout-assets.appspot.com/assets/bg2.jpg">
+                <img data-src="https://app-layout-assets.appspot.com/assets/bg3.jpg">
+                <img data-src="https://app-layout-assets.appspot.com/assets/bg4.jpg"-->
+            </image-carousel>
+            <app-toolbar class="toolbar">
+              <div main-title>Scrolling control</div>
+              <dom-if if="[[autoScroll]]">
+                <template>
+                  <paper-slider value="{{timer}}" min="100"  max="[[maxtimer]]" step="[[_step]]" editable></paper-slider>
+                </template>
+              </dom-if>
+              <div class="toggle-icon">
+                <icon-toggle  toggle-icon="arrow-forward" pressed="{{autoScroll}}"></icon-toggle>
+                <dom-if if="[[autoScroll]]">
+                  <template>
+                    <span class="stop"> </span>
+                  </template>
+                </dom-if>
+                <dom-if if="[[!autoScroll]]">
+                  <template>
+                    <span class="start">  </span>
+                  </template>
+                </dom-if>
+              </div>
+            </app-toolbar>
+          </template>
+        </dom-bind>
+      </template>
+    <demo-snippet>
+  </div>
+  <script>
+    const carousel = document.querySelector('image-carousel');
+    let images= ["https://app-layout-assets.appspot.com/assets/bg1.jpg","https://app-layout-assets.appspot.com/assets/bg2.jpg",
+    "https://app-layout-assets.appspot.com/assets/bg3.jpg","https://app-layout-assets.appspot.com/assets/bg4.jpg"]
+    images.forEach( function(image) {
+        var img  = document.createElement("img");
+        img.setAttribute('data-src',image);
+        carousel.appendChild(img);
+    });
+
+  </script>
+  </body>
+</html>

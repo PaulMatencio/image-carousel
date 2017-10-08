@@ -1,0 +1,529 @@
+<!--   Based on Codelabs for building a Ploymer 2.0 carsousel -->
+<!--
+@license
+Copyright (c) 2016 The Polymer Project Authors. All rights reserved.
+This code may only be used under the BSD style license found at http://polymer.github.io/LICENSE.txt
+The complete set of authors may be found at http://polymer.github.io/AUTHORS.txt
+The complete set of contributors may be found at http://polymer.github.io/CONTRIBUTORS.txt
+Code distributed by Google as part of the polymer project is also
+subject to an additional IP rights grant found at http://polymer.github.io/PATENTS.txt
+-->
+<link rel="import" href="../polymer/polymer-element.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-icons/av-icons.html">
+<link rel="import" href="image-carousel-mixin.html">
+<link rel="import" href="image-carousel-shared-styles.html">
+<link rel="import" href="../polymer/lib/utils/flattened-nodes-observer.html">
+<dom-module id="image-carousel">
+  <template>
+    <style include="image-carousel-shared-styles"></style>
+    <div>
+      <slot></slot>
+    </div>
+    <button class="carousel" id="prevBtn" on-click="previous_image">&#x276E;</button>
+    <button class="carousel" id="nextBtn" on-click="next_image">&#x276F;</button>
+    <div class="bullets" hidden$={{noBullets}}>
+      <template id="bullets" is="dom-repeat" items="{{_imgWC}}">
+        <button data-index$="{{item.image.index}}" class$="{{item.class}}" on-click="_changeIndex"</button>
+      </template>
+    </div>
+    <dom-if if="[[controlScrolling]]">
+      <template>
+        <app-toolbar  class="toolbar">
+          <dom-if if="[[autoScroll]]">
+            <template>
+              <paper-slider value="{{timer}}" min="100"  max="[[maxtimer]]" step="[[_step]]" editable></paper-slider>
+            </template>
+          </dom-if>
+          <div class="toggle-icon">
+            <icon-toggle  toggle-icon="arrow-forward" pressed="{{autoScroll}}"></icon-toggle>
+            <dom-if if="[[autoScroll]]">
+              <template>
+                <span class="stop"></span>
+              </template>
+            </dom-if>
+            <dom-if if="[[!autoScroll]]">
+              <template>
+                <span class="start"></span>
+              </template>
+            </dom-if>
+          </div>
+        </app-toolbar>
+      </template>
+    <dom-if>
+  </template>
+
+  <script>
+  class ImageCarousel extends ImageCarouselMixin(Polymer.Element)   {
+      static get is() { return 'image-carousel' }
+
+      static get properties() {
+        return {
+
+          images: {
+            type: Array,
+            value: [],
+            notify: true,
+            observer: '_onImagesChanged'
+          },
+
+          index: {
+            type: Number,
+            value: 0,
+            notify: true,
+            observer: '_onIndexChanged'
+          },
+
+          noBullets: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+
+          controlScrolling: {
+            type: Boolean,
+            value: false,
+            notify: true
+          },
+
+          _imgWC: {
+            type: Array,
+            value: [],
+            notify: true
+          },
+
+          cacheApi: {
+            type: Boolean,
+            value: false
+          },
+
+          fetchApi: {
+            type: Boolean,
+            value: true
+          }
+
+        }
+      }
+
+      constructor() {
+        super();
+      }
+
+      ready() {
+        super.ready();
+        // this._updateChildren();
+        if (!('fetch' in window)) {
+          console.log('Fetch API not found, try including the polyfill');
+          this.set('fetchApi',false);
+        }
+
+        this._createPropertyObserver('autoScroll', '_autoScroll', true);
+        this._createPropertyObserver('timer', '_autoScroll', true);
+        requestAnimationFrame(this._installListeners.bind(this));
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+        let slot = this.shadowRoot.querySelector("slot");
+        /*
+        * observe when children are added or removed
+        *   if IMG are added => update the img element to add new atributes ( data-index, data-image)
+        *   if removed => empty the <images attribute> of the carousel
+        *                 the imgWC array should be reset by _onIndexChanged()
+        */
+        this._observer = new Polymer.FlattenedNodesObserver(slot, (info) => {
+           if (info.addedNodes.length >0 && info.addedNodes[0].tagName == "IMG"){
+             this._updateChildren();
+           }
+           if ( info.removedNodes.length > 0 && info.addedNodes.length == 0)  {
+             this.set('images',[]);
+           }
+        });
+      }
+
+      // add <data-image> and <data-index> attributes to the <img> children
+      // update the <images> attribute of the image-carousel itself
+      // this will triggered _onImagesChanged observer
+      _updateChildren() {
+        let children = this.children;
+        let images_a = [];
+        for ( var k = 0; k < children.length ; k++)    {
+          let datasrc = children[k].getAttribute('data-src');
+          children[k].setAttribute('data-index',k);
+          let image = datasrc.substr(0,4) === "http" ? new URL(datasrc).pathname : datasrc.substr(datasrc.indexOf("/"));
+          children[k].setAttribute('data-image',image);
+          images_a.push({
+            "src": datasrc,
+            "image": image,
+            "index": k,
+          });
+        }
+        /* this wil trigger _onImagesChanged observer
+        *  Actually it does nothing
+        */
+        this.set('images',images_a);
+      }
+
+
+      _onIndexChanged(){
+        let current = this.index;
+        this._imgWC = this.images.map(function(img,idx) {
+          return {"image":img, "class": idx == current? 'active': ''};
+        });
+      }
+
+      _onImagesChanged(){
+       console.log(this.images);
+      }
+
+      _changeIndex(e) {
+        let index = Number(e.target.getAttribute('data-index'));
+        this._selectElem(index);
+
+      }
+
+      /*  when bullet is selected */
+      _selectElem(index){
+        let  elem = this.firstElementChild;
+        for ( var i = 0; i < index; i++) {
+          elem = elem.nextElementSibling;
+        }
+        this.selected = elem.previousElementSibling;
+        this.next_image();
+      };
+
+      _selectedChanged(selected , oldSelected ) {
+          super._selectedChanged(selected, oldSelected);
+          if (selected) {
+            if (selected !== undefined) {
+              this.set('title',selected.dataset.image);
+              // this will triger onIndexChanged
+              this.set('index',selected.dataset.index);
+            }
+            var previous = selected.previousElementSibling;
+            var next = selected.nextElementSibling;
+            if (this.$.prevBtn !== undefined ) {
+              this.$.prevBtn.disabled = !previous ;
+              this.$.nextBtn.disabled = !next;
+            }
+            /* lazy-load images */
+            this._loadImage(selected);
+            this._loadImage(previous);
+            this._loadImage(next);
+
+          } else {
+              if (this.$.prevBtn !== undefined ) {
+              this.$.prevBtn.disabled = true;
+              this.$.nextBtn.disabled = true;
+            }
+          }
+        }
+
+        /**
+        * Lazy-load images
+        */
+
+      _loadImage(img) {
+        if (img && !img.src) {
+          console.log(this.fetchApi);
+          if (!this.fetchApi) {
+            // change the img.src and let the browser loda the image
+            img.setAttribute('src',img.getAttribute('data-src'));
+            // img.src = img.getAttribute('data-src');
+          } else {
+            /** fetchImage(img) will read the image from indexedDB
+            *   if the image is not in indexedDB, it will fetch the image ,
+            *   store it in indexed DB and read it from indexedDB
+            */
+            this._fetchImage(img);
+          }
+        }
+      }
+
+      /* adding transition */
+      _translateX(elem, x, transition) {
+        if ( elem !== undefined ) {
+          elem.style.display = 'block';
+          elem.style.transition = transition ? 'transform 0.002s' : '';
+          elem.style.transform = 'translate3d(' + x + 'px, 0, 0)';
+        }
+      }
+
+      /* set by requestAnimationFrame */
+      _installListeners() {
+        this.addEventListener('transitionend', this._resetChildrenStyles.bind(this));
+        this.addEventListener('touchstart', this._touchstart.bind(this));
+        this.addEventListener('touchmove', this._touchmove.bind(this));
+        this.addEventListener('touchend', this._touchend.bind(this));
+      }
+
+      _touchstart(event) {
+        // No transition if less than two images
+        if (this.childElementCount < 2) {
+          return;
+        }
+
+        // Save start coordinates
+        if (!this._touchDir) {
+          this._startX = event.changedTouches[0].clientX;
+          this._startY = event.changedTouches[0].clientY;
+        }
+      }
+
+      _touchmove(event) {
+        // No transition if less than two images
+        if (this.childElementCount < 2) {
+          return;
+        }
+
+        // Is touchmove mostly horizontal or vertical?
+        if (!this._touchDir) {
+          const absX = Math.abs(event.changedTouches[0].clientX - this._startX);
+          const absY = Math.abs(event.changedTouches[0].clientY - this._startY);
+          this._touchDir = absX > absY ? 'x' : 'y';
+        }
+
+        if (this._touchDir === 'x') {
+          // Prevent vertically scrolling when swiping
+          event.preventDefault();
+
+          let dx = Math.round(event.changedTouches[0].clientX - this._startX);
+          const prevChild = this.selected.previousElementSibling;
+          const nextChild = this.selected.nextElementSibling;
+
+          // Don't translate past the current image if there's no adjacent image in that direction
+          if ((!prevChild && dx > 0) || (!nextChild && dx < 0)) {
+            dx = 0;
+          }
+
+          this._translateX(this.selected, dx);
+          if (prevChild) {
+            this._translateX(prevChild, dx - this.offsetWidth);
+          }
+          if (nextChild) {
+            this._translateX(nextChild, dx + this.offsetWidth);
+          }
+        }
+      }
+
+      _touchend(event) {
+        // No transition if less than two images
+        if (this.childElementCount < 2) {
+          return;
+        }
+
+        // Don't finish swiping if there are still active touches.
+        if (event.touches.length) {
+          return;
+        }
+
+        if (this._touchDir === 'x') {
+          let dx = Math.round(event.changedTouches[0].clientX - this._startX);
+          const prevChild = this.selected.previousElementSibling;
+          const nextChild = this.selected.nextElementSibling;
+
+          // Don't translate past the current image if there's no adjacent image in that direction
+          if ((!prevChild && dx > 0) || (!nextChild && dx < 0)) {
+            dx = 0;
+          }
+
+          if (dx > 0) {
+            if (dx > 100) {
+              if (dx === this.offsetWidth) {
+                // No transitionend will fire (since we're already in the final state),
+                // so reset children styles now
+                this._resetChildrenStyles();
+              } else {
+                this._translateX(prevChild, 0, true);
+                this._translateX(this.selected, this.offsetWidth, true);
+              }
+              this.selected = prevChild;
+            } else {
+              this._translateX(prevChild, -this.offsetWidth, true);
+              this._translateX(this.selected, 0, true);
+            }
+          } else if (dx < 0) {
+            if (dx < -100) {
+              if (dx === -this.offsetWidth) {
+                // No transitionend will fire (since we're already in the final state),
+                // so reset children styles now
+                this._resetChildrenStyles();
+              } else {
+                this._translateX(this.selected, -this.offsetWidth, true);
+                this._translateX(nextChild, 0, true);
+              }
+              this.selected = nextChild;
+            } else {
+              this._translateX(this.selected, 0, true);
+              this._translateX(nextChild, this.offsetWidth, true);
+            }
+          } else {
+            // No transitionend will fire (since we're already in the final state),
+            // so reset children styles now
+            this._resetChildrenStyles();
+          }
+        }
+
+        // Reset touch direction
+        this._touchDir = null;
+      }
+
+      /**
+      * The _resetChildrenStyles() method will clear the style attributes that
+      * were set by our element. Now we have a carousel that transitions
+       between images:
+      */
+      _resetChildrenStyles() {
+        let elem = this.firstElementChild;
+        while (elem) {
+          elem.style.display = '';
+          elem.style.transition = '';
+          elem.style.transform = '';
+          elem = elem.nextElementSibling;
+        }
+      }
+
+      _autoScroll() {
+        if ( typeof(this.currentInterval)  !==  "undefined ") {
+            clearInterval(this.currentInterval)
+        }
+        if (this.autoScroll) {
+            this.currentInterval = setInterval(_ => this.next_image(), this.timer);
+        }
+      }
+
+      // called  by _loadImage(img)
+      _fetchImage(img) {
+        if (img.tagName != 'IMG') {
+          return;
+        }
+        let self = this;
+        let url = img.dataset.src;
+        let  URL = window.URL || window.webkitURL;
+        let origin = new URL(url).origin;
+        let path =  url.substr(origin.length);
+        this._fetch(path,img);
+       }
+
+      _fetch(path,img)  {
+        console.log("fetch ", path);
+        let self = this;
+        let url = img.dataset.src;
+        let requestHeaders = new Headers();
+        let responseHeaders = {};
+        let init = { method: 'GET',
+             headers: requestHeaders,
+             mode: 'cors',
+             cache: 'default' };
+        let request = new Request(url,init);
+
+        fetch(request)
+        .then(response => validateResponse(response))
+        .then(response => response.blob())
+        .then( function(blob){
+          let objectURL = URL.createObjectURL(blob);
+          img.setAttribute('src', objectURL );
+          // Revoke ObjectURL for the garbage collector
+          img.onload = function() {
+                window.URL.revokeObjectURL(this.src);
+          }
+        })
+        .catch(error => requestError(error,path,img));
+      }
+
+
+      /**
+      * define two methods, previous() and next(), that will change the selected
+      * image. These methods will become part of the element's public API,
+      * so they don't start with underscores
+      */
+
+      previous_image() {
+        // select the previous element of the current element
+        const elem = this.selected && this.selected.previousElementSibling;
+        if (elem) {
+          /* Setup transition start state */
+          const oldSelected = this.selected;
+          this._translateX(oldSelected, 0);
+          this._translateX(elem, -this.offsetWidth);
+          /* star the transition */
+          this.selected = elem;
+          this._translateX(oldSelected, this.offsetWidth, true );
+          this._translateX(elem, 0, true  );
+        } else {
+          var last  = this.lastElementChild;
+          this.selected = last;
+          this._translateX(last, 0, true/* transition */);
+          this.last_image();
+        }
+      }
+
+      next_image() {
+        const elem = this.selected && this.selected.nextElementSibling;
+        if (elem) {
+          /**
+          * Setup transition start state
+          */
+          const oldSelected = this.selected;
+          this._translateX(oldSelected, 0);
+          this._translateX(elem, this.offsetWidth);
+          /**
+          * star the transition
+          */
+          this.selected = elem;
+          this._translateX(oldSelected,-this.offsetWidth,true);
+          this._translateX(elem, 0, true);
+        }  else {
+          var first = this.firstElementChild;
+          this.selected = first;
+          this._translateX(first, 0, true /* transition */);
+          this.first_image()
+        }
+      }
+
+      /**
+      * define two more methods, first() and last(), that will jump to the first
+      * element or the last element of the caroussel
+      */
+
+      first_image() {
+        const elem = this.selected ;
+        this._translateX(elem, this.offsetWidth,true);
+        var first = this.firstElementChild;
+        this.selected = first;
+        this._translateX(first, 0, true);
+      }
+
+      last_image() {
+        const elem = this.selected ;
+        this._translateX(elem, -this.offsetWidth,true);
+        var last = this.lastElementChild;
+        this.selected = last;
+        this._translateX(last, 0, true);
+      }
+
+      increase_timer() {
+        this.timer=  (this.timer > this.maxtime ? this.maxtime : this.timer += this._step ) ;
+      }
+
+      decrease_timer() {
+        this.timer = (this.timer <= this._step ? this._step : this.timer -= this._step );
+      }
+   }
+
+   function requestError(error, path,img) {
+       console.log(error,path);
+       img.setAttribute("src","../images/icon-no-image.png");
+   }
+
+   function validateResponse(response) {
+      if (!response.ok) {
+         throw(response.statusText);
+      } else return response;
+   }
+
+   customElements.define(ImageCarousel.is, ImageCarousel);
+
+ </script>
+</dom-module>

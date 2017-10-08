@@ -1,0 +1,31 @@
+<!-- personalized  style -->
+<link rel="import" href="../polymer/polymer-element.html">
+<dom-module id="image-carousel-styles">
+  <template>
+    <style>
+        image-carousel {
+          width: 100%;
+          contain: content;
+          margin:0;
+        }
+
+        image-carousel::after {
+          display: block;
+          content: '';
+          padding-top: 65%;
+        }
+
+        image-carousel img {
+          position: absolute;
+          width: 100%;
+          height: 100%;
+        }
+
+        @media (max-width: 1288px) {
+          image-carousel::after {
+            padding-top: 75%;
+          }
+        }
+    </style>
+  </template>
+</dom-module>

@@ -1,0 +1,56 @@
+<link rel="import" href="../polymer/polymer.html">
+<dom-module id="image-carousel-custom-styles">
+  <template>
+    <custom-style>
+      <style>
+      /* Define a document-wide default—will not override a :host rule in  */
+        html {
+          --iron-icon-stroke-color: #6495ED;
+          --icon-toggle-outline-color: #6495ED;
+        }
+      /* Override the value specified in demo-element */
+        image-carousel {
+          --iron-icon-fill-color: #6495ED;
+          --iron-icon-stroke-color: #6495ED;
+          --iron-icon-height: 24px;
+          --iron-icon-width: 24px;
+          --icon-toggle-pressed-color: green;
+          --scroll-button-size: 24px;
+          --bullet-active-color: #206a6a;
+          --bullet-color: #8a8a8a;
+
+          --image-carousel: {
+              width: 100%;
+              contain: content;
+              margin:0;
+            };
+
+          --image-carousel-after: {
+              display: block;
+              content: '';
+              padding-top: 65%;
+            }
+        }
+
+        /* custom style  for paper slider  */
+        paper-slider {
+          --paper-slider-input: {
+            background:white;
+            width: 100%;
+            font-size: 10px !important;
+          };
+        }
+
+        
+        /* This rule will apply to the body of this html! */
+        body {
+          --iron-icon-fill-color: #AB5530;
+          --iron-icon-stroke-color: #AB5530;
+          --iron-icon-height: 36px;
+          --iron-icon-width: 36px;
+          --icon-toggle-color: red;
+        }
+      </style>
+    <custom-style>
+  </template>
+<dom-module>

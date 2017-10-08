@@ -1,0 +1,42 @@
+ "images":
+  [{"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg1.jpg",
+  "index": "0"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg2.jpg",
+  "index": "1"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg3.jpg",
+  "index": "2"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg4.jpg",
+  "index": "3"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg1.jpg",
+  "index": "4"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg2.jpg",
+  "index": "5"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg3.jpg",
+  "index": "6"
+  },
+  {"host": "https://app-layout-assets.appspot.com",
+  "path": "assets",
+  "img": "bg4.jpg",
+  "index": "7"
+  }]
+}

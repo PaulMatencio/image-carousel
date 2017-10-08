@@ -1,0 +1,153 @@
+<!-- personalized  style -->
+<link rel="import" href="../polymer/polymer-element.html">
+<dom-module id="image-carousel-shared-styles">
+  <template>
+    <style>
+
+      :host {
+        display: block;
+        position: relative;
+        overflow: hidden;
+      }
+
+      div > ::slotted(:not([selected])) {
+        display: none;
+      }
+
+      /*
+        CSS for carousel button
+      */
+      .carousel {
+        position: absolute;
+        top: calc(50% - 20px);
+
+        padding: 0;
+        line-height: var(--scroll-button-size, 40px);
+        border: none;
+        background: none;
+        color: #DDD;
+        font-size: var(--scroll-button-size, 40px);
+        font-weight: bold;
+
+        opacity: 0.9;
+      }
+
+      .carousel:hover,
+      .carousel:focus {
+        opacity: 1;
+      }
+
+      #prevBtn {
+        left: calc(var(--iron-icon-width, 24px)/2);
+      }
+
+      #nextBtn {
+        right: calc(var(--iron-icon-width, 24px)/2);
+      }
+
+      button[disabled] {
+        opacity: 0.3;
+        color: red;
+      }
+
+      /*
+      *   CSS for carousel bullets
+      */
+      .bullets {
+        margin: 5px;
+        left: 0;
+        width: 100%;
+        z-index: 100;
+        height: 20px;
+        bottom: -35px;
+        text-align: center;
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      .bullets button {
+        display: inline-block;
+        position: relative;
+        width: 24px;
+        height: 24px;
+        margin: 0;
+        cursor: pointer;
+        border: none;
+        outline: none;
+        background-color: transparent;
+      }
+
+      .bullets button:after,
+      .bullets button:before {
+       content: " ";
+       display: block;
+       position: absolute;
+       top: 15%;
+       left: 15%;
+       width: 70%;
+       height: 70%;
+       border-radius: 50%;
+       -webkit-transform: scale(0.5);
+       transform: scale(0.5);
+       -webkit-transition: -webkit-transform .225s cubic-bezier(.5, .75, .5, 1.65), opacity .15s ease-out;
+       transition: transform .225s cubic-bezier(.5, .75, .5, 1.65), opacity .15s ease-out;
+      }
+
+      .bullets button:after {
+        opacity: 0;
+        background-color:  var(--bullet-active-color, #6a6a6a);
+      }
+      .bullets button:before {
+        background-color:  var(--bullet-color, #3f3f3f);
+      }
+
+      .bullets button:hover:before {
+        -webkit-transform: scale(0.7);
+        transform: scale(0.7);
+      }
+      .bullets .active:after {
+        opacity: 1;
+        -webkit-transform: scale(1);
+        transform: scale(1.5);
+      }
+
+      .bullets .active:before {
+        opacity: 0;
+        -webkit-transform: scale(.5);
+        transform: scale(.5);
+      }
+
+      .toolbar {
+        @apply --layout-horizontal;
+        @apply --layout-end-justified;
+        position: absolute;
+        width: 95%;
+        bottom: 0px;
+        background-color: transparent;
+      }
+
+      paper-slider {
+        --paper-slider-input: {
+          background:white;
+          width: 150px;
+          font-size: 10px !important;
+        };
+      }
+
+
+      /*
+      *     Media query to control the carousel padding top
+      */
+      @media (max-width: 1288px) {
+        image-carousel::after {
+          padding-top: 75%;
+        }
+      }
+
+    </style>
+  </template>
+</dom-module>
