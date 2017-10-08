@@ -17,6 +17,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 <link rel="import" href="../polymer/lib/utils/flattened-nodes-observer.html">
 <dom-module id="image-carousel">
   <template>
+
     <style include="image-carousel-shared-styles"></style>
     <div>
       <slot></slot>
@@ -55,6 +56,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
   </template>
 
   <script>
+(function(){ 
   class ImageCarousel extends ImageCarouselMixin(Polymer.Element)   {
       static get is() { return 'image-carousel' }
 
@@ -524,6 +526,7 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
    }
 
    customElements.define(ImageCarousel.is, ImageCarousel);
+})();
 
  </script>
 </dom-module>
