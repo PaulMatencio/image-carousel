@@ -107,6 +107,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
             worker: {
               type: Object
+            },
+
+            transform: {
+              type: String
             }
 
           }
@@ -531,20 +535,24 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
      }
 
      function transformBlob(self,blob) {
-       return new Promise(function(resolve,reject){
-           var data = {} ;
-           data.imageData = blob;
-           data.type = self.transform;
-           self.worker.postMessage(data);
-           self.worker.onmessage = function(e) {
-               resolve(e.data);
-           }
-           self.worker.onerror = function(e) {
-                reject(e.data);
-            }
-        })
-     }
 
+        return new Promise(function(resolve){
+            var data = {} ;
+            data.blob = blob;
+
+            if (self.transform) {
+              data.transform = self.transform;
+              self.worker.postMessage(data);
+              self.worker.onmessage = function(e) {
+                  resolve(e.data);
+              }
+              self.worker.onerror = function(e) {
+                  resolve(blob);
+              }
+            } else resolve(blob)
+         })
+
+    }
      customElements.define(ImageCarousel.is, ImageCarousel);
   })();
 
